@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+import googleIcon from "../assets/google.svg";
+import githubIcon from "../assets/github.svg";
+import PasswordToggleButton from "../components/PasswordToggleButton";
+
 const backend_URL =
   import.meta.env.VITE_REACT_APP_BACKEND_URL || "http://localhost:5000";
 
@@ -28,7 +32,11 @@ const Login = () => {
       toast.success(data.message);
       navigate("/verify-otp", { state: { email } });
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong",
+      );
     } finally {
       setBtnLoading(false);
     }
@@ -74,64 +82,17 @@ const Login = () => {
                 required
               />
 
-              {/* Eye Button */}
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300"
-              >
-                {showPassword ? (
-                  /* Eye Off Icon */
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 3l18 18M10.584 10.587a2 2 0 102.829 2.828M9.88 5.092A9.77 9.77 0 0112 5c5 0 9 7 9 7a17.1 17.1 0 01-3.223 3.91M6.53 6.53C4.57 7.94 3 10 3 10s4 7 9 7a8.94 8.94 0 004.47-1.19"
-                    />
-                  </svg>
-                ) : (
-                  /* Eye Icon */
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                    />
-                  </svg>
-                )}
-              </button>
+              <PasswordToggleButton
+                show={showPassword}
+                onToggle={() => setShowPassword((prev) => !prev)}
+              />
             </div>
-          </div>
-
-          {/* Remember + Forgot */}
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center gap-2 text-slate-300">
-              <input type="checkbox" className="mt-0.5 cursor-pointer" />
-              Remember me
-            </label>
-
-            <a href="#" className="text-slate-300">
-              Forget password?
-            </a>
+            {/* Forget password */}
+            <div className="flex items-center justify-end text-sm mt-1">
+              <a href="/forgot-password" className="text-slate-300">
+                Forgot password?
+              </a>
+            </div>
           </div>
 
           {/* Sign in button */}
@@ -153,22 +114,20 @@ const Login = () => {
         {/* Social Login */}
         <div className="grid grid-cols-2 gap-4">
           <button className=" flex items-center justify-center gap-2  bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md border border-slate-600">
-            <img
-              src="https://www.svgrepo.com/show/475656/google-color.svg"
-              alt="google"
-              className="w-5 h-5"
-            />
+            <img src={googleIcon} alt="google" className="w-5 h-5" />
             Google
           </button>
 
           <button className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md border border-slate-600">
-            <img
-              src="https://www.svgrepo.com/show/512317/github-142.svg"
-              alt="github"
-              className="w-5 h-5"
-            />
+            <img src={githubIcon} alt="github" className="w-5 h-5" />
             GitHub
           </button>
+        </div>
+        <div className="text-slate-400 text-center mt-4">
+          <span>Don't have an account? </span>
+          <a className="text-slate-300" href="/register">
+            Register
+          </a>
         </div>
       </div>
     </div>

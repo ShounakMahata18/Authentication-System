@@ -5,6 +5,9 @@ import {
   verifyUser,
   loginUser,
   verifyOTP,
+  forgotPassword,
+  verifyResetPassword,
+  resetPassword,
   myProfile,
   refreshToken,
   logoutUser,
@@ -21,6 +24,9 @@ router.post("/register", registerUser);
 router.post("/verify/:token", verifyUser);
 router.post("/login", loginUser);
 router.post("/verify-otp", verifyOTP);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-password/:token", verifyResetPassword);
+router.post("/reset-password/:token", resetPassword);
 router.get("/me", isAuth, myProfile);
 router.post("/refresh", refreshToken);
 router.post("/logout", isAuth, verifyCSRFToken, logoutUser);

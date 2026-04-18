@@ -7,7 +7,7 @@ import { AppData } from "../context/AppContext";
 
 const backend_URL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
 
-const verifyOTP = () => {
+const LoginVerification = () => {
   const [btnLoading, setBtnLoading] = useState(false);
   const [OTP, setOTP] = useState("");
 
@@ -43,7 +43,11 @@ const verifyOTP = () => {
       setUser(data.user);
       navigate("/");
     } catch (error) {
-      toast.error(error.response?.data?.message);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong",
+      );
     } finally {
       setBtnLoading(false);
     }
@@ -100,4 +104,4 @@ const verifyOTP = () => {
   );
 };
 
-export default verifyOTP;
+export default LoginVerification;

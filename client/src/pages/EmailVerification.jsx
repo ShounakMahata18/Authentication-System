@@ -7,7 +7,7 @@ import Loading from "../components/Loading";
 const backend_URL =
   import.meta.env.VITE_REACT_APP_BACKEND_URL || "http://localhost:5000";
 
-const Verify = () => {
+const EmailVerification = () => {
   const [successMesaage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -22,7 +22,11 @@ const Verify = () => {
 
       setSuccessMessage(data.message);
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || error.message || "Something went wrong");
+      setErrorMessage(
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong",
+      );
     } finally {
       setLoading(false);
     }
@@ -49,4 +53,4 @@ const Verify = () => {
   );
 };
 
-export default Verify;
+export default EmailVerification;
