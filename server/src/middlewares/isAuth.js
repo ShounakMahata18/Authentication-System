@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 import { redisClient } from "../index.js";
-import { User } from "../models/User.js";
+import { User } from "../models/User.model.js";
 import { isSessionActive } from "../config/generateToken.js";
 
 export const isAuth = async (req, res, next) => {

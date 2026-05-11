@@ -26,7 +26,7 @@ const ResetPassword = () => {
       const token = params.token;
 
       const { data } = await axios.post(
-        `${backend_URL}/api/auth/verify-reset-password/${token}`,
+        `${backend_URL}/api/auth/verify-reset-token/${token}`,
       );
       setEmail(data.email);
     } catch (error) {

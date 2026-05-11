@@ -17,7 +17,7 @@ const EmailVerification = () => {
   async function verifyUser() {
     try {
       const { data } = await axios.post(
-        `${backend_URL}/api/auth/verify/${params.token}`,
+        `${backend_URL}/api/auth/verify-email/${params.token}`,
       );
 
       setSuccessMessage(data.message);

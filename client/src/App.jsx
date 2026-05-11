@@ -8,10 +8,12 @@ import Register from "./pages/Register";
 import EmailVerification from "./pages/EmailVerification";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import NotFound from "./pages/NotFound";
 import Loading from "./components/Loading";
 import { AppData } from "./context/AppContext";
 import PrivateRoute from "./routes/PrivateRoute";
 import PublicRoute from "./routes/PublicRoute";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const App = () => {
   const { loading } = AppData();
@@ -24,21 +26,18 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             {/* Private */}
-            <Route
-              path="/"
-              element={
-                <PrivateRoute>
-                  <Home />
-                </PrivateRoute>
-              }
-            />
+            <Route path="/" element={<Home />} />
 
             {/* Public */}
             <Route
               path="/login"
               element={
                 <PublicRoute>
-                  <Login />
+                  <GoogleOAuthProvider
+                    clientId={import.meta.env.VITE_REACT_APP_GOOGLE_CLIENT_ID}
+                  >
+                    <Login />
+                  </GoogleOAuthProvider>
                 </PublicRoute>
               }
             />
@@ -87,6 +86,9 @@ const App = () => {
                 </PublicRoute>
               }
             />
+
+            {/* 404 Route */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
 
           <ToastContainer />

@@ -41,8 +41,8 @@ export const generateToken = async (id, res) => {
   // Check for existing session from redis
   const existingSession = await redisClient.get(activeSessionKey);
   if (existingSession) {
-    await redisClient.del(`session:${sessionId}`);
-    await redisClient.del(refreshToken);
+    await redisClient.del(`session:${existingSession}`);
+    await redisClient.del(refreshTokenKey);
   }
 
   // Create session, active data to be stored
@@ -55,7 +55,7 @@ export const generateToken = async (id, res) => {
 
   // Set refresh token in redis
   await redisClient.setEx(refreshTokenKey, 7 * 24 * 60 * 60, refreshToken);
-  
+
   // Set sessionId in redis
   await redisClient.setEx(activeSessionKey, 7 * 24 * 60 * 60, sessionId);
 
@@ -117,7 +117,7 @@ export const verifyRefreshToken = async (refreshToken) => {
 
     // Update the last activity in session
     const parsedSessionData = JSON.parse(sessionData);
-    parsedSessionData.lastActivity = new Date.toISOString();
+    parsedSessionData.lastActivity = new Date().toISOString();
 
     // Set in redis
     await redisClient.setEx(

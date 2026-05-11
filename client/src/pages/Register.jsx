@@ -4,7 +4,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 import googleIcon from "../assets/google.svg";
-import githubIcon from "../assets/github.svg";
 import PasswordToggleButton from "../components/PasswordToggleButton";
 
 const backend_URL =
@@ -198,15 +197,10 @@ const Register = () => {
         </div>
 
         {/* Social Login */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <button className=" flex items-center justify-center gap-2  bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md border border-slate-600">
             <img src={googleIcon} alt="google" className="w-5 h-5" />
             Google
-          </button>
-
-          <button className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md border border-slate-600">
-            <img src={githubIcon} alt="github" className="w-5 h-5" />
-            GitHub
           </button>
         </div>
         <div className="text-slate-400 text-center mt-4">

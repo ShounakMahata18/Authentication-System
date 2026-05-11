@@ -1,8 +1,10 @@
 import sanitize from "mongo-sanitize";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 
-import TryCatch from "../middlewares/TryCatch.js";
+import { redisClient } from "../index.js";
+import { User } from "../models/User.model.js";
 import {
   registerSchema,
   loginSchema,
@@ -10,20 +12,20 @@ import {
   forgotPasswordEmailSchema,
   resetPasswordSchema,
 } from "../config/zod.js";
-import { redisClient } from "../index.js";
-import { User } from "../models/User.js";
 import sendMail from "../config/sendMail.js";
 import {
   getVerifyEmailHtml,
   getOtpHtml,
   getResetPasswordHtml,
 } from "../config/html.js";
+import googleClient from "../config/google.js";
 import {
   generateAccessToken,
   generateToken,
   revokeRefreshToken,
   verifyRefreshToken,
 } from "../config/generateToken.js";
+import TryCatch from "../middlewares/TryCatch.js";
 import {
   generateCSRFToken,
   revokeCSRFToken,
@@ -126,6 +128,7 @@ export const verifyUser = TryCatch(async (req, res) => {
     name: userData.name,
     email: userData.email,
     password: userData.password,
+    isEmailVerified: true
   });
 
   return res.status(201).json({
@@ -173,7 +176,7 @@ export const loginUser = TryCatch(async (req, res) => {
       .status(429)
       .json({ message: "Too many request, try again later" });
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).select("+password");
 
   if (!user) return res.status(400).json({ message: "Invalid Credentials" });
 
@@ -233,6 +236,7 @@ export const verifyOTP = TryCatch(async (req, res) => {
   const tokenData = await generateToken(user._id, res);
 
   return res.status(200).json({
+    success: true,
     message: `Welcome ${user.name}`,
     user,
     sessionInfo: {
@@ -396,27 +400,6 @@ export const resetPassword = TryCatch(async (req, res) => {
   return res.status(200).json({ message: "Password reset successful" });
 });
 
-export const myProfile = TryCatch(async (req, res) => {
-  const user = req.user;
-
-  const sessionId = req.sessionId;
-
-  const sessionData = await redisClient.get(`session:${sessionId}`);
-
-  let sessionInfo = null;
-
-  if (sessionData) {
-    const parsedSession = JSON.parse(sessionData);
-    sessionInfo = {
-      sessionId,
-      loginTime: parsedSession.createdAt,
-      lastActivity: parsedSession.lastActivity,
-    };
-  }
-
-  return res.status(200).json({ user, sessionInfo });
-});
-
 export const refreshToken = TryCatch(async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
 
@@ -470,6 +453,87 @@ export const refreshCSRFToken = TryCatch(async (req, res) => {
   });
 });
 
-export const adminController = TryCatch((req, res) => {
-  res.json({ message: "Hello admin" });
+export const myProfile = TryCatch(async (req, res) => {
+  const user = req.user;
+
+  const sessionId = req.sessionId;
+
+  const sessionData = await redisClient.get(`session:${sessionId}`);
+
+  let sessionInfo = null;
+
+  if (sessionData) {
+    const parsedSession = JSON.parse(sessionData);
+    sessionInfo = {
+      sessionId,
+      loginTime: parsedSession.createdAt,
+      lastActivity: parsedSession.lastActivity,
+    };
+  }
+
+  return res.status(200).json({ user, sessionInfo });
+});
+
+export const googleAuth = TryCatch(async (req, res) => {
+  const { code } = req.body;
+
+  if (!code) {
+    return res.status(400).json({ message: "No code provided" });
+  }
+
+  // Exchange the code for tokens
+  const { tokens } = await googleClient.getToken(code);
+
+  if (!tokens.id_token) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid Google token",
+    });
+  }
+
+  // Verify ID token
+  const ticket = await googleClient.verifyIdToken({
+    idToken: tokens.id_token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const payload = ticket.getPayload();
+
+  const { sub: googleId, name, email, picture, email_verified } = payload;
+
+  if (!email_verified) {
+    return res.status(400).json({
+      success: false,
+      message: "Google email not verified",
+    });
+  }
+
+  // Find existing user
+  let user = await User.findOne({ email });
+
+  // Create user if not exists
+  if (!user) {
+    user = await User.create({
+      name,
+      email,
+      googleId,
+      avatar: picture,
+      isEmailVerified: true,
+      provider: "google",
+    });
+  }
+
+  // generate and set tokens for login 
+  const tokenData = await generateToken(user._id, res);
+
+  return res.status(200).json({
+    success: true,
+    message: `Welcome ${user.name}`,
+    user,
+    sessionInfo: {
+      sessionId: tokenData.sessionId,
+      loginTime: new Date().toISOString(),
+      csrfToken: tokenData.csrfToken,
+    },
+  });
 });

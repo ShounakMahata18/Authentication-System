@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useGoogleLogin } from "@react-oauth/google";
 
 import googleIcon from "../assets/google.svg";
-import githubIcon from "../assets/github.svg";
 import PasswordToggleButton from "../components/PasswordToggleButton";
 
 const backend_URL =
@@ -41,6 +41,34 @@ const Login = () => {
       setBtnLoading(false);
     }
   };
+
+  const googleLogin = useGoogleLogin({
+    flow: "auth-code",
+    onSuccess: async (codeResponse) => {
+      try {
+        const { data } = await axios.post(
+          `${backend_URL}/api/auth/google`,
+          {
+            code: codeResponse.code,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+
+        window.location.href = "/";
+      } catch (error) {
+        toast.error(
+          error.response?.data?.message ||
+            error.message ||
+            "Google login failed",
+        );
+      }
+    },
+    onError: () => {
+      toast.error("Google Sign-In failed");
+    },
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-900">
@@ -112,15 +140,13 @@ const Login = () => {
         </div>
 
         {/* Social Login */}
-        <div className="grid grid-cols-2 gap-4">
-          <button className=" flex items-center justify-center gap-2  bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md border border-slate-600">
+        <div className="grid grid-cols-1 gap-4">
+          <button
+            onClick={googleLogin}
+            className="flex items-center justify-center gap-2  bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md border border-slate-600 cursor-pointer"
+          >
             <img src={googleIcon} alt="google" className="w-5 h-5" />
             Google
-          </button>
-
-          <button className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-md border border-slate-600">
-            <img src={githubIcon} alt="github" className="w-5 h-5" />
-            GitHub
           </button>
         </div>
         <div className="text-slate-400 text-center mt-4">
